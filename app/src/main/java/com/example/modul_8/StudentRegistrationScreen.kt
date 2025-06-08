@@ -22,8 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun StudentRegistrationScreen(viewModel: StudentViewModel =
-                                  viewModel()) {
+fun StudentRegistrationScreen(viewModel: StudentViewModel = viewModel()) {
     var studentId by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var program by remember { mutableStateOf("") }
