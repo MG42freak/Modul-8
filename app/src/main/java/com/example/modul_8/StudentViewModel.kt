@@ -1,27 +1,12 @@
 package com.example.modul_8
 
 import android.util.Log
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 class StudentViewModel : ViewModel() {
     private val db = Firebase.firestore
@@ -34,13 +19,14 @@ class StudentViewModel : ViewModel() {
         val studentMap = hashMapOf(
             "id" to student.id,
             "name" to student.name,
-            "program" to student.program
+            "program" to student.program,
+            "phones" to student.phones
         )
         db.collection("students")
             .add(studentMap)
             .addOnSuccessListener {
                 Log.d("Firestore", "DocumentSnapshot added with ID: ${it.id}")
-                fetchStudents() // Refresh list
+                fetchStudents()
             }
             .addOnFailureListener { e ->
                 Log.w("Firestore", "Error adding document", e)
@@ -55,7 +41,8 @@ class StudentViewModel : ViewModel() {
                     val id = document.getString("id") ?: ""
                     val name = document.getString("name") ?: ""
                     val program = document.getString("program") ?: ""
-                    list.add(Student(id, name, program))
+                    val phones = document.get("phones") as? List<String> ?: emptyList()
+                    list.add(Student(id, name, program, phones))
                 }
                 students = list
             }
@@ -63,41 +50,5 @@ class StudentViewModel : ViewModel() {
                 Log.w("Firestore", "Error getting documents.",
                     exception)
             }
-    }
-}
-
-@Composable
-fun StudentRegistrationScreen(viewModel: StudentViewModel = viewModel()) {
-    var studentId by remember { mutableStateOf("") }
-    var name by remember { mutableStateOf("") }
-    var program by remember { mutableStateOf("") }
-    Column(modifier = Modifier
-        .padding(16.dp)
-        .fillMaxSize()) {
-        TextField(value = studentId, onValueChange = { studentId = it },
-            label = { Text("Student ID") })
-        TextField(value = name, onValueChange = { name = it }, label = {
-            Text("Name") })
-        TextField(value = program, onValueChange = { program = it },
-            label = { Text("Program") })
-        Button(
-            onClick = {
-                viewModel.addStudent(Student(studentId, name, program))
-                studentId = ""
-                name = ""
-                program = ""
-            },
-            modifier = Modifier.padding(top = 8.dp)
-        ) {
-            Text("Submit")
-        }
-        Divider(modifier = Modifier.padding(vertical = 16.dp))
-        Text("Student List", style =
-            MaterialTheme.typography.titleMedium)
-        LazyColumn {
-            items(viewModel.students) { student ->
-                Text("${student.id} - ${student.name} - ${student.program}")
-            }
-        }
     }
 }
